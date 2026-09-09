@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bend</title>
+<meta name="description" content="Bend: a fast language that blocks AI mistakes via proof.">
+<style>
+:root{
+  --bg:#f2eee7;--bg2:#e9e4db;--line:#e4dfd5;--b1:#a9a59d;--b0:#87847d;--b00:#87847d;--b01:#69665f;--b02:#4d4a44;
+  --ora:#c4845c;--red:#c46a60;--vio:#8b83b5;--grn:#7e9a5e;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);color:var(--b01);font:15px/1.6 ui-monospace,Menlo,"SF Mono",Consolas,"Liberation Mono",monospace;font-size:clamp(10px,max(min(2.5vw,15px),1vw),26px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0 auto;max-width:65ch;padding:0 2ch 4em}
+a{color:var(--vio);text-decoration:none;border-bottom:1px solid #d8d4e2}
+a:hover{border-bottom-color:var(--vio)}
+b{color:var(--b02);font-weight:600}
+p{margin:1em 0;white-space:pre;overflow-x:auto}
+p.c{text-align:center}
+code{color:var(--b02)}
+.pl{margin:1.6em 0}
+.pl .q{color:var(--vio)}
+.pl em{font-style:normal;color:var(--grn);font-weight:600}
+
+header{display:flex;justify-content:space-between;padding:1.2em 0 0;color:var(--b1);font-size:.87em}
+header nav a{color:var(--b00);border:0;margin-left:2ch}
+header nav a:hover{color:var(--vio)}
+
+#hero{text-align:center;padding:3.4em 0 1.6em}
+#hero h1{font-size:2.9em;line-height:1;margin:0;color:var(--b02);font-weight:600;letter-spacing:-.02em}
+#hero h1::after{content:"";display:inline-block;width:.5em;height:.9em;margin-left:.12em;vertical-align:-.08em;background:var(--vio);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#hero .sub{margin:1.2em 0 0;color:var(--b00)}
+
+section{margin:3em 0 0;padding-top:1.4em;border-top:1px solid var(--line)}
+h2{font-size:1.3em;margin:0 0 .9em;color:var(--b02);font-weight:600}
+h2 span{color:var(--b1);font-weight:400;margin-right:1ch}
+h3{font-size:1em;margin:1.6em 0 .4em;color:var(--b02);font-weight:600}
+h3 span{color:var(--b1);font-weight:400;margin-right:1ch}
+.note{color:var(--b1);font-size:.87em}
+.note a{color:var(--b0);border-bottom-color:var(--line)}
+
+pre{margin:1em 0;padding:.8em 1ch;background:var(--bg2);border-radius:3px;overflow-x:auto;line-height:1.5;color:var(--b01);tab-size:2}
+pre code{color:inherit}
+.k{color:var(--grn)}.v{color:var(--vio)}.o{color:var(--ora)}.c{color:var(--b1)}
+.f{color:var(--b1);font-size:.8em;margin:0 0 -.7em;padding:0 .2ch}
+
+figure{margin:1.4em 0}
+figcaption{text-align:center;color:var(--b1);font-size:.87em;margin-top:.7em}
+.ct{text-align:center;color:var(--b00);font-weight:600;margin:0}
+.bars{display:flex;align-items:flex-end;gap:.7em;max-width:35em;margin:0 auto;padding-top:2.4em}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:.8em;color:var(--b01)}
+.bar i{display:block;width:100%;height:calc(var(--h)*10em);min-height:2px;background:#cdc7bc;transform:scaleY(0);transform-origin:bottom;transition:transform .5s ease-out calc(var(--i)*.12s)}
+.bar.bend i{background:var(--vio)}
+.bar.over i{height:10em;background:repeating-linear-gradient(-45deg,#e2dcd1 0 4px,#efebe4 4px 9px)}
+.bar b{margin-bottom:5px;text-align:center;line-height:1.25;opacity:0;transition:opacity .4s calc(var(--i)*.12s + .3s)}
+.bar b em{display:block;color:var(--grn);font-style:normal}
+.bar span{margin-top:6px;white-space:nowrap;text-align:center;line-height:1.3;height:2.6em;color:var(--b00)}
+.bar.bend span{color:var(--vio);font-weight:600}
+.bars.on .bar i{transform:none}.bars.on .bar b{opacity:1}
+.dots{display:flex;justify-content:center;gap:1ch;margin-top:.5em;color:var(--b1);user-select:none;font-size:.87em}
+.dots i,.dots a{font-style:normal;cursor:pointer;border:0;color:var(--b1)}
+.dots i.on{color:var(--vio)}
+.dots a{color:var(--b00)}
+
+canvas{display:block;width:100%}
+.act canvas{aspect-ratio:12/8}
+.act{margin:2em 0}
+.gt{text-align:center;color:var(--b01);margin:0 0 .6em}
+.act figcaption{font-size:1em;color:var(--b00)}
+.act figcaption.red{color:var(--red)}.act figcaption.green{color:var(--grn)}.act figcaption b{color:inherit}
+.ask{margin:3em 0}
+.quote{text-align:center;font-size:1.3em;color:var(--vio);margin:0}
+#cube{aspect-ratio:1;max-width:26em;margin:0 auto}
+
+</style>
+</head>
+<body>
+
+<header>
+  <span>~/bend</span>
+  <nav><a href="https://github.com/HigherOrderCO/bend4">github</a><a href="https://github.com/HigherOrderCO/bend4/blob/main/guide/GUIDE.md">guide</a><a href="#start">install</a></nav>
+</header>
+
+<div id="hero">
+  <h1>Bend</h1>
+  <p class="sub">a <b>fast</b> language that <b>blocks AI mistakes</b> via <b>proof</b></p>
+</div>
+
+
+
+<section>
+  <h2><span>1.</span>Bend runs <b>FAST</b>.</h2>
+  <p>Bend compiles to native code. On one core, it runs nearly as
+fast as C. The same binary also runs on sixteen cores, or on
+the GPU, where it is up to eighty times as fast as one core.</p>
+  <figure class="chart" id="c2">
+    <p class="ct"></p>
+    <div class="bars"></div>
+    <div class="dots"></div>
+    <figcaption>Apple M4 Max · lower is better</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span>2.</span>Bend compiles <b>FAST</b>.</h2>
+  <p>Bend's type checker is a proof checker, as in Lean and Rocq.
+Those can take minutes on a mid-sized codebase. Bend takes a
+second at most, so an AI agent can check after every change.</p>
+  <figure class="chart" id="c1">
+    <p class="ct"></p>
+    <div class="bars"></div>
+    <div class="dots"></div>
+    <figcaption>Apple M4 Max · lower is better</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span>3.</span>Bend is <b>PARALLEL</b>.</h2>
+  <p>No threads, no locks, no kernels to write. Split the work in
+two, and Bend spreads the calls over every core it can find,
+then joins them back. Now watch pow2 run on 4,096 GPU cores:</p>
+  <figure>
+    <canvas id="cube"></canvas>
+    <figcaption>pow2.bend running on the <b>GPU</b></figcaption>
+  </figure>
+</section>
+
+<section id="laws">
+  <h2><span>4.</span>Bend blocks mistakes via <b>PROOF</b>.</h2>
+  <p>How can you <b>trust</b> code you never read? By demanding a <b>proof</b>.
+LAWS.bend is where you declare laws. From then on, no AI can
+ship one line that breaks them, ever. Watch it guard a game:</p>
+  <figure class="act">
+    <p class="gt"><b>Law</b>: winning is <b>impossible</b></p>
+    <canvas id="g0"></canvas>
+    <figcaption>So far, it works!</figcaption>
+  </figure>
+  <div class="ask">
+    <p class="gt"><b>New feature:</b></p>
+    <p class="quote">“please, make the board wrap around”</p>
+  </div>
+  <figure class="act">
+    <p class="gt"><b>Without LAWS.bend:</b></p>
+    <canvas id="g1"></canvas>
+    <figcaption class="red">Laws broken. AI mistake: <b>merged</b>.</figcaption>
+  </figure>
+  <figure class="act">
+    <p class="gt"><b>With LAWS.bend:</b></p>
+    <canvas id="g2"></canvas>
+    <figcaption class="green">Laws intact. AI mistake: <b>blocked</b>!</figcaption>
+  </figure>
+  <p>Without LAWS.bend, the bug went live. With LAWS.bend, the AI
+had to retry until it built a wall and proved the law holds.
+Merging a bug is mathematically impossible: it is a <em>theorem</em>.</p>
+<p class="f">LAWS.bend</p>
+<pre><code><span class="c"># LAW: no move sequence leads to victory.</span>
+<span class="k">law</span> <span class="v">you_cant_win</span>:
+  <span class="k">for</span> moves: List&lt;Move&gt;           <span class="c"># any sequence of moves</span>
+  board = replay(start(), moves)  <span class="c"># replayed from the start</span>
+  is_won(board) == <span class="o">False</span>          <span class="c"># never leads to victory</span></code></pre>
+<p class="f">CERT.bend</p>
+<pre><code><span class="c"># PROOF: you_cant_win holds.</span>
+<span class="k">def</span> <span class="v">you_cant_win</span>(moves):
+  <span class="c"># ... written by the AI</span></code></pre>
+  <p class="c pl"><code>LAWS.bend</code> is <code>AGENTS.md</code> backed by <b>proof</b>.
+<span class="q">“Make no mistakes”</span> is now <em>type-checked</em>.</p>
+  <p class="note c"><a href="https://victortaelin.github.io/winning_is_a_bug">play the game</a> · <a href="https://github.com/HigherOrderCO/bend4/tree/main/demos/winning_is_a_bug">game, law and proof</a></p>
+
+</section>
+
+<section id="start">
+  <h2><span>5.</span>Get started.</h2>
+  <h3><span>5.1.</span>Install</h3>
+<pre><code><span class="c"># needs Bun 1.3+ and clang; Metal or CUDA for the GPU</span>
+git clone https://github.com/HigherOrderCO/bend4
+cd bend4
+ln -s "$PWD/bend2/main.ts" ~/.bun/bin/bend</code></pre>
+  <h3><span>5.2.</span>Write hello.bend</h3>
+<pre><code><span class="k">import</span> Base
+
+<span class="k">def</span> <span class="v">main</span>() -> IO(Unit):
+  IO.print(<span class="o">"Hello, world!"</span>)</code></pre>
+  <h3><span>5.3.</span>Check, compile, run</h3>
+<pre><code>bend hello.bend            <span class="c"># check</span>
+bend hello.bend -o hello   <span class="c"># compile</span>
+./hello                    <span class="c"># run (on GPU!)</span></code></pre>
+  <p>Then read the <a href="https://github.com/HigherOrderCO/bend4/blob/main/guide/GUIDE.md">guide</a>. The core is <a href="https://github.com/HigherOrderCO/bend4/blob/main/bend2/bend.lean">formalized in Lean</a>, and two
+papers describe it: <a href="https://github.com/HigherOrderCO/bend4/blob/main/paper/BendTT.pdf">BendTT</a>, the type theory, and <a href="https://github.com/HigherOrderCO/bend4/blob/main/paper/BendRT.pdf">BendRT</a>, the
+runtime. The compiler is young: expect bugs and <a href="https://github.com/HigherOrderCO/bend4/issues">report them</a>.</p>
+</section>
+
+<script>
+(() => {
+"use strict";
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const ease  = x => { x = clamp(x, 0, 1); return x*x*(3 - 2*x); };
+const lerp  = (a, b, x) => a + (b - a)*x;
+const rnd   = i => { const s = Math.sin(i*12.9898)*43758.5453; return s - Math.floor(s); };
+const hex   = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix   = (a, b, f) => { const A = hex(a), B = hex(b); return "rgb(" + A.map((v, i) => Math.round(lerp(v, B[i], f))).join(",") + ")"; };
+const MONO  = 'ui-monospace,Menlo,"SF Mono",Consolas,monospace';
+const secs  = s => (s >= 10 ? s.toFixed(1) : s.toFixed(2)) + "s";
+const times = x => (x >= 10 ? Math.round(x) : x.toFixed(1)) + "x";
+
+// an element knows whether it is on screen; a chart fills, a canvas runs, only then
+const io = new IntersectionObserver(es => es.forEach(e => {
+  const el = e.target; el._on = e.isIntersecting;
+  if (el._on && el._run) el._run();
+}), { threshold: 0.15 });
+
+// ---------------------------------------------------------------- charts
+// One chart, many benches: it pages to the next bench every 4 s while on
+// screen, the bars rising again each time, until the reader clicks a dot
+// or an arrow; then it stays where the reader put it. Every number is a
+// pin from bench/*/_pin_/apple_m4_max.txt.
+function chart(id, rows, bars) {
+  const fig = document.getElementById(id), box = fig.querySelector(".bars");
+  const cap = fig.querySelector(".ct"), dots = fig.querySelector(".dots");
+  let cur = 0;
+  function show(i) {
+    cur = (i + rows.length) % rows.length;
+    const bs = bars(rows[cur]), over = bs.some(b => b.over);
+    const vmax = Math.max(...bs.map(b => b.over ? 0 : b.v))*(over ? 2 : 1);
+    box.classList.remove("on");
+    box.innerHTML = bs.map((b, i) =>
+      '<div class="bar' + (b.bend ? " bend" : "") + (b.over ? " over" : "") + '" style="--h:' + (b.over ? 1 : b.v/vmax) + ";--i:" + i + '">'
+      + "<b>" + (b.mul ? "<em>" + b.mul + "</em>" : "") + (b.over ? "&gt;5 min" : secs(b.v)) + "</b><i></i><span>" + b.name + "</span></div>").join("");
+    cap.textContent = rows[cur][1];
+    dots.innerHTML = "<a>«</a>" + rows.map((r, i) => '<i class="' + (i === cur ? "on" : "") + '" title="' + r[1] + '">' + (i === cur ? "●" : "○") + "</i>").join("") + "<a>»</a>";
+    void box.offsetWidth;
+    if (fig._on) box.classList.add("on");
+  }
+  const timer = setInterval(() => { if (fig._on) show(cur + 1); }, 4000);
+  dots.addEventListener("click", e => {
+    const t = e.target;
+    if (t.tagName === "A") show(cur + (t.textContent === "«" ? -1 : 1));
+    else if (t.tagName === "I") show([...dots.querySelectorAll("i")].indexOf(t));
+    else return;
+    clearInterval(timer);
+  });
+  fig._run = () => box.classList.add("on");
+  io.observe(fig);
+  show(0);
+}
+// checker: Isabelle, Agda, Lean, Rocq, Bend; >300 is a timeout
+chart("c1", [
+  ["generics_3200", "3,200 generic instantiations", 300, 300, 19.557, 6.124, 0.345],
+  ["defs_12800", "12,800 definitions", 300, 300, 35.644, 3.095, 0.294],
+  ["proofs_3200", "3,200 proofs", 300, 300, 300, 9.760, 0.842],
+  ["trees_400", "400 smalltt trees", 8.475, 3.294, 1.386, 1.337, 0.608],
+], r => ["Isabelle", "Agda", "Lean", "Rocq", "Bend"].map((name, i) => ({ name, v: r[i + 2], over: r[i + 2] >= 300, bend: name === "Bend" })));
+// runtime: TypeScript, Lean, C, then Bend on 1 core, 16 cores, the GPU
+chart("c2", [
+  ["gameoflife", "game of life", 18.957, 14.081, 6.989, 7.788, 0.659, 0.093],
+  ["bfs", "breadth-first search", 6.598, 9.328, 3.574, 3.511, 0.688, 3.377],
+  ["bitonic", "bitonic sort", 34.741, 28.402, 5.787, 6.148, 0.600, 0.435],
+  ["editdist", "edit distance", 5.710, 4.899, 2.094, 2.696, 0.242, 0.157],
+  ["hashmap", "hashmap", 0.920, 1.569, 0.646, 3.947, 0.335, 0.624],
+  ["kmeans", "k-means", 17.978, 5.861, 2.091, 2.243, 0.255, 0.187],
+  ["lexer", "lexer", 3.654, 5.186, 1.068, 2.637, 0.236, 1.678],
+  ["mandelbrot", "mandelbrot", 3.990, 4.700, 3.915, 4.679, 0.408, 0.080],
+  ["matmul", "matrix multiply", 11.258, 8.308, 2.867, 2.597, 0.233, 0.224],
+  ["merkle", "merkle tree", 7.258, 5.964, 3.555, 4.321, 0.392, 0.086],
+  ["nbody", "n-body", 5.393, 5.429, 5.004, 4.795, 0.435, 0.079],
+  ["queens", "n-queens", 7.442, 8.578, 4.724, 5.184, 0.436, 1.188],
+  ["radix", "radix sort", 6.738, 7.739, 3.535, 4.371, 0.391, 0.267],
+  ["raytrace", "ray tracer", 23.016, 11.039, 4.842, 4.928, 0.423, 0.197],
+  ["symreg", "symbolic regression", 5.974, 2.546, 2.236, 3.281, 0.286, 0.530],
+  ["terrain", "terrain", 5.803, 8.195, 2.262, 2.409, 0.218, 0.126],
+], r => [
+  { name: "TypeScript", v: r[2] }, { name: "Lean", v: r[3] }, { name: "C", v: r[4] },
+  { name: "Bend<br>1 core", v: r[5], bend: true },
+  { name: "Bend<br>16 cores", v: r[6], bend: true, mul: times(r[5]/r[6]) },
+  { name: "Bend<br>GPU", v: r[7], bend: true, mul: times(r[5]/r[7]) },
+]);
+
+// ---------------------------------------------------------------- canvases
+// a canvas with its own clock: it advances only while the canvas is seen
+function play(cv, draw) {
+  const ctx = cv.getContext("2d");
+  let t = 0, last = 0, raf = 0;
+  function frame(now) {
+    if (!cv._on) { raf = 0; last = 0; return; }
+    if (last) t += Math.min((now - last)/1000, 0.1);
+    last = now;
+    const w = cv.clientWidth, h = cv.clientHeight, d = window.devicePixelRatio || 1;
+    if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)) { cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    draw(ctx, t, w, h);
+    raf = requestAnimationFrame(frame);
+  }
+  cv._run = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  io.observe(cv);
+}
+
+// ---------------------------------------------------------------- the GPU
+// pow2.bend is shown; its name turns bold, grows, and rides to the centre
+// as the call pow2(20). It splits in two, in four, ... until one task sits on each of
+// 64 x 64 cores; every core works its task; then the results fold back,
+// pairwise: the purple region contracts toward the top-left cell, halving
+// along one axis at a time, the cells it leaves going gray; then the view
+// zooms onto that one cell, and it shows the answer.
+{
+  const N = 64, LEVELS = 12, D0 = 0.5, HOLD1 = 0.7;
+  const splitDur = k => 0.9*Math.pow(0.8, k);
+  let DALL = D0; for (let k = 0; k < LEVELS; k++) DALL += splitDur(k);
+  const E0 = DALL + HOLD1, ELEN = 1.0, ESPREAD = 1.3, R0 = E0 + ELEN + ESPREAD + 0.8;
+  const foldDur = j => 0.5*Math.pow(0.85, j);           // the folds quicken, as in the film
+  let RDONE = R0; for (let j = 0; j < LEVELS; j++) RDONE += foldDur(j);
+  const foldAt = u => { let j = 0, t = R0; while (j < LEVELS && u >= t + foldDur(j)) { t += foldDur(j); j++; } return j < LEVELS ? j + clamp((u - t)/foldDur(j), 0, 1) : LEVELS; };
+  const Z0 = RDONE + 0.5, ZLEN = 1.4, Z1 = Z0 + ZLEN, CB = 4.2, CF0 = 5.2, CFLY = 1.2, CEND = CF0 + CFLY, TOTAL = CEND + Z1 + 2.6;
+  // the file, as the page's code panels draw it: keyword, name, comment, text
+  const CODE = [
+    [["def", "k"], [" "], ["pow2", "v"], ["(+d: Nat) -> U32:"]],
+    [["  "], ["match", "k"], [" d:"]],
+    [["    "], ["case", "k"], [" 0n:"]],
+    [["      1"]],
+    [["    "], ["case", "k"], [" 1n+p:"]],
+    [["      a b = pow2(p) pow2(p)  "], ["# parallel call", "c"]],
+    [["      (a + b : U32)"]],
+  ];
+  const CINK = { k: "#7e9a5e", v: "#8b83b5", c: "#a9a59d", "": "#69665f" };
+  const MIST = "#e6e1d8", BG = "#f2eee7", INK = "#5e5787";
+  const TILES = ["#e4e1ec", "#d2cee1", "#bfb9d5", "#aca5c9", "#9a92be", "#8b83b5", "#6e6694"], SKY = TILES[0];
+  const rung = t => { const i = Math.min(Math.floor(t), TILES.length - 2); return mix(TILES[i], TILES[i + 1], t - i); };
+  const HEAT = []; for (let i = 0; i <= 16; i++) HEAT.push(rung(2*i/16));
+  const dims = k => [1 << Math.ceil(k/2), 1 << Math.floor(k/2)];
+  const phase = (c, r) => rnd(c*7919 + r*104729)*ESPREAD;
+
+  function cell(ctx, x, y, w, h, fill, a) {
+    const g = clamp(Math.min(w, h)*0.1, 1, 6);
+    if (a !== undefined) ctx.globalAlpha = a;
+    ctx.fillStyle = fill; ctx.fillRect(x + g/2, y + g/2, w - g, h - g);
+    if (a !== undefined) ctx.globalAlpha = 1;
+  }
+  function label(ctx, s, x, y, w, h, a, ink) {
+    const fs = Math.min(Math.min(w, h)*0.17, 40);
+    if (fs < 6 || a <= 0) return;
+    ctx.globalAlpha = a; ctx.fillStyle = ink || INK; ctx.font = "600 " + fs + "px " + MONO;
+    ctx.textAlign = "center"; ctx.fillText(s, x + w/2, y + h/2 + fs*0.36); ctx.globalAlpha = 1;
+  }
+  // pow2.bend on the canvas; then its name turns bold, then it grows and
+  // rides to the centre as the call pow2(20), where the split takes over
+  function code(ctx, u, W) {
+    const fs = W/30, lh = fs*1.5, pad = fs*0.8, FS = Math.min(W*0.17, 40);
+    ctx.font = "400 " + fs + "px " + MONO; const cw = ctx.measureText("0").width;
+    const cols = Math.max(...CODE.map(l => l.reduce((n, t) => n + t[0].length, 0)));
+    const pw = cols*cw + 2*pad, ph = CODE.length*lh + 2*pad, px = (W - pw)/2, py = (W - ph)/2 + fs*0.6;
+    const p = clamp((u - CF0)/CFLY, 0, 1), a = ease(u/0.4)*(1 - ease(p/0.6));
+    ctx.textAlign = "left";
+    if (a > 0) {
+      ctx.globalAlpha = a;
+      ctx.fillStyle = CINK.c; ctx.font = "400 " + fs*0.8 + "px " + MONO; ctx.fillText("pow2.bend", px + pad*0.25, py - fs*0.6);
+      ctx.fillStyle = "#e9e4db"; ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 3); ctx.fill();
+      CODE.forEach((line, i) => {
+        let x = px + pad; const y = py + pad + lh*(i + 0.72);
+        for (const [s, c] of line) {
+          if (!(c === "v" && p > 0)) {
+            ctx.font = (c === "v" && u >= CB ? "600 " : "400 ") + fs + "px " + MONO; ctx.fillStyle = CINK[c || ""];
+            ctx.fillText(s, x, y);
+          }
+          x += s.length*cw;
+        }
+      });
+      ctx.globalAlpha = 1;
+    }
+    if (p > 0) {
+      const e = ease(p), f = lerp(fs, FS, e);
+      ctx.font = "600 " + FS + "px " + MONO; const we = ctx.measureText("pow2(20)").width;
+      const x = lerp(px + pad + 4*cw, W/2 - we/2, e), y = lerp(py + pad + lh*0.72, W/2 + FS*0.36, e);
+      ctx.font = "600 " + f + "px " + MONO; ctx.fillStyle = mix("#8b83b5", "#5e5787", e);
+      ctx.fillText("pow2", x, y);
+      ctx.globalAlpha = ease((p - 0.5)/0.5); ctx.fillText("(20)", x + ctx.measureText("pow2").width, y); ctx.globalAlpha = 1;
+    }
+  }
+  const boxA = k => clamp((k - 2)/9, 0, 1);
+  function slots(ctx, W, k, m, a, la) {
+    const [cols, rows] = dims(k), w = W/cols, h = W/rows;
+    const [pc, pr] = k ? dims(k - 1) : [1, 1], pw = W/pc, ph = W/pr;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (a > 0) cell(ctx, c*w, r*h, w, h, SKY, a);
+      if (la <= 0) continue;
+      const hx = (c + 0.5)*w, hy = (r + 0.5)*h;
+      const px = (Math.floor(c*pc/cols) + 0.5)*pw, py = (Math.floor(r*pr/rows) + 0.5)*ph;
+      label(ctx, "pow2(" + (20 - k) + ")", lerp(px, hx, m) - w/2, lerp(py, hy, m) - h/2, w, h, la);
+    }
+  }
+  function draw(ctx, t, W) {
+    const v = t % TOTAL, cs = W/N;
+    if (v < CEND) return code(ctx, v, W);                           // the file
+    const u = v - CEND;
+    if (u < E0) {                                                   // split
+      let k = 0, s = D0;
+      while (k < LEVELS && u >= s + splitDur(k)) { s += splitDur(k); k++; }
+      const d = splitDur(k), cut = Math.min(0.6, d*0.7);
+      const p = k < LEVELS ? ease((u - (s + d - cut))/cut) : 0;
+      slots(ctx, W, k, 1, boxA(k), 1 - clamp(p/0.4, 0, 1));
+      if (p > 0) slots(ctx, W, k + 1, ease(p), boxA(k + 1)*p, clamp((p - 0.3)/0.5, 0, 1));
+    } else if (u < R0) {                                            // eval
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const j = clamp((u - E0 - phase(c, r))/ELEN, 0, 1);
+        cell(ctx, c*cs, r*cs, cs, cs, HEAT[Math.round(j*16)]);
+      }
+    } else if (u < Z0) {                                            // fold
+      const f = foldAt(u), j = Math.floor(f), m = ease(f - j);
+      const k = LEVELS - j, [w, h] = dims(k), vert = k % 2 === 1, fill = rung(2 + 4*f/LEVELS);
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) cell(ctx, c*cs, r*cs, cs, cs, MIST);
+      for (let r = 0; r < h; r++) for (let c = 0; c < w; c++)
+        cell(ctx, (vert ? lerp(c, c/2, m) : c)*cs, (vert ? r : lerp(r, r/2, m))*cs, cs, cs, fill);
+    } else {                                                        // zoom
+      const s = Math.pow(N, ease((u - Z0)/ZLEN)), zs = cs*s, lim = Math.min(N, Math.ceil(N/s) + 1);
+      for (let r = 0; r < lim; r++) for (let c = 0; c < lim; c++) if (c || r) cell(ctx, c*zs, r*zs, zs, zs, MIST);
+      cell(ctx, 0, 0, zs, zs, TILES[6]);
+      label(ctx, "1048576", 0, 0, zs, zs, ease((u - Z1 + 0.2)/0.5), BG);
+    }
+  }
+  play(document.getElementById("cube"), draw);
+}
+
+// ---------------------------------------------------------------- the game
+// The level main.bend prints: a 12 x 8 map, a flag at (1,1) in a room
+// sealed by two walls, the player at (8,5). Three acts, one canvas each,
+// each a short loop that starts when it scrolls into view; the titles and
+// the verdicts are HTML around them. Act one: the player walks up and
+// bumps the room's wall. Act two: the wrap feature without LAWS.bend: the
+// player walks off the right edge, in at the left, and takes the flag, and
+// the win screen pops. Act three: with LAWS.bend: the AI's wall on the far
+// edge stops the walk, and nothing pops.
+{
+  const GW = 12, GH = 8, STEP = 0.2, BUMP = 0.4, BUMPS = 3, LEAD = 0.6, HOLD = 1.8;
+  const PAL = { floor: ["#ebe8e2", "#e1ded7"], wall: "#a6a3a0", cap: "#bebbb8", hit: "#d9a39c", hitcap: "#e8c4bf",
+                pole: "#87847d", cloth: "#7e9a5e", skin: "#78c0e3", eye: "#2f3b4c",
+                win: "#f6e4e1", winRim: "#dfa9a2", winInk: "#c46a60" };
+  const up = (x, y0, y1) => { const p = []; for (let y = y0; y >= y1; y--) p.push([x, y]); return p; };
+  const near = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) <= 1;
+  const routeDur = r => r.reduce((t, c, i) => i && near(c, r[i - 1]) ? t + STEP : t, 0);
+  function routeAt(r, u) {
+    let t = 0;
+    for (let i = 0; i + 1 < r.length; i++) {
+      if (!near(r[i], r[i + 1])) continue;
+      if (u < t + STEP) { const f = (u - t)/STEP; return [lerp(r[i][0], r[i + 1][0], f), lerp(r[i][1], r[i + 1][1], f)]; }
+      t += STEP;
+    }
+    return r[r.length - 1];
+  }
+  function wallsOf(far) {
+    const s = new Set(), add = (x, y) => s.add(x + "," + y);
+    for (let y = 0; y <= 3; y++) add(3, y);
+    for (let x = 0; x <= 3; x++) add(x, 3);
+    if (far) { for (let x = 0; x <= 3; x++) add(x, 7); for (let y = 0; y <= 3; y++) add(11, y); }
+    return s;
+  }
+  const ACTS = [
+    { id: "g0", far: false, route: up(8, 5, 1).concat([[7, 1], [6, 1], [5, 1], [4, 1]]), bump: [-1, "3,1"] },
+    { id: "g1", far: false, route: up(8, 5, 1).concat([[9, 1], [10, 1], [11, 1], [12, 1], [-1, 1], [0, 1], [1, 1]]), win: true,
+      pop: "YOU WON !?" },
+    { id: "g2", far: true, route: up(8, 5, 1).concat([[9, 1], [10, 1]]), bump: [1, "11,1"] },
+  ];
+  for (const a of ACTS) {
+    a.walk = routeDur(a.route); a.tail = a.bump ? BUMP*BUMPS : 0.3; a.dur = LEAD + a.walk + a.tail + HOLD;
+    a.walls = wallsOf(a.far);
+    play(document.getElementById(a.id), (ctx, t, W) => draw(ctx, t % a.dur, W, a));
+  }
+  function draw(ctx, u, W, a) {
+    const T = W/GW, v = u - LEAD, walls = a.walls;
+    let [px, py] = a.route[0], hit = null, flag = true, pop = 0;
+    if (v >= a.walk) {
+      [px, py] = a.route[a.route.length - 1];
+      if (a.bump) {
+        const tb = (v - a.walk)/BUMP, g = tb - Math.floor(tb);
+        if (tb < BUMPS) {
+          const d = g < 0.25 ? g/0.25 : g < 0.5 ? (0.5 - g)/0.25 : 0;
+          px += 0.3*d*a.bump[0]; hit = g > 0.2 && g < 0.4 ? a.bump[1] : null;
+        }
+      }
+      if (a.win) flag = false;
+      if (a.pop) pop = ease((v - a.walk - a.tail)/0.3);
+    } else if (v > 0) [px, py] = routeAt(a.route, v);
+    const tile = (x, y, w, h, r, fill) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); };
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+      const key = x + "," + y, X = x*T + 1.5, Y = y*T + 1.5, S = T - 3;
+      if (!walls.has(key)) { tile(X, Y, S, S, T/8, PAL.floor[(x + y) % 2]); continue; }
+      const lit = hit === key;
+      tile(X, Y, S, S, T/8, lit ? PAL.hit : PAL.wall);
+      tile(x*T + T/8, y*T + T/8, T*0.75, T*0.21, T/19, lit ? PAL.hitcap : PAL.cap);
+    }
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, GW*T, GH*T); ctx.clip();
+    const k = T/40;
+    if (flag) {
+      const fx = T, fy = T;
+      ctx.strokeStyle = PAL.pole; ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.beginPath();
+      ctx.moveTo(fx + 14*k, fy + 31*k); ctx.lineTo(fx + 14*k, fy + 9*k); ctx.stroke();
+      ctx.fillStyle = PAL.cloth; ctx.beginPath();
+      ctx.moveTo(fx + 15*k, fy + 9*k); ctx.lineTo(fx + 31*k, fy + 14.5*k); ctx.lineTo(fx + 15*k, fy + 20*k); ctx.closePath(); ctx.fill();
+    }
+    const cx = px*T + T/2, cy = py*T + T/2;
+    ctx.fillStyle = PAL.skin; ctx.beginPath(); ctx.arc(cx, cy, 12.5*k, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = PAL.eye; ctx.beginPath();
+    ctx.arc(cx - 4.5*k, cy - 2*k, 2.2*k, 0, Math.PI*2); ctx.arc(cx + 4.5*k, cy - 2*k, 2.2*k, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    if (pop > 0) {
+      const bw = T*5.6, bh = T*1.5, bx = (GW*T - bw)/2, by = (GH*T - bh)/2;
+      ctx.globalAlpha = pop;
+      ctx.fillStyle = PAL.win; ctx.strokeStyle = PAL.winRim; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = PAL.winInk; ctx.font = "600 " + T*0.6 + "px " + MONO; ctx.textAlign = "center";
+      ctx.fillText(a.pop, GW*T/2, by + bh*0.66);
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+})();
+</script>
+</body>
+</html>
