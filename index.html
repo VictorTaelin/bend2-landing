@@ -50,7 +50,7 @@ figcaption{text-align:center;color:var(--b1);font-size:.87em;margin-top:.7em}
 .ct{text-align:center;color:var(--b00);font-weight:600;margin:0}
 .bars{display:flex;align-items:flex-end;gap:.7em;max-width:35em;margin:0 auto;padding-top:2.4em}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:.8em;color:var(--b01)}
-.bar i{display:block;width:100%;height:calc(var(--h)*10em);min-height:2px;background:#cdc7bc;transform:scaleY(0);transform-origin:bottom;transition:transform .5s ease-out calc(var(--i)*.12s)}
+.bar i{display:block;width:100%;height:calc(var(--h)*10em);min-height:2px;background:#cdc7bc;transform:scaleY(0);transform-origin:bottom;transition:transform .5s ease-out calc(var(--i)*.12s),height .6s ease}
 .bar.bend i{background:var(--vio)}
 .bar.over i{height:10em;background:repeating-linear-gradient(-45deg,#e2dcd1 0 4px,#efebe4 4px 9px)}
 .bar b{margin-bottom:5px;text-align:center;line-height:1.25;opacity:0;transition:opacity .4s calc(var(--i)*.12s + .3s)}
@@ -211,9 +211,10 @@ const io = new IntersectionObserver(es => es.forEach(e => {
 
 // ---------------------------------------------------------------- charts
 // One chart, many benches: it pages to the next bench every 4 s while on
-// screen, the bars rising again each time, until the reader clicks a dot
-// or an arrow; then it stays where the reader put it. Every number is a
-// pin from bench/*/_pin_/apple_m4_max.txt.
+// screen until the reader clicks a dot or an arrow; then it stays where
+// the reader put it. The bars rise once, when the chart scrolls into
+// view; a page turn glides each bar to its new height and crossfades its
+// number. Every number is a pin from bench/*/_pin_/apple_m4_max.txt.
 function chart(id, rows, bars) {
   const fig = document.getElementById(id), box = fig.querySelector(".bars");
   const cap = fig.querySelector(".ct"), dots = fig.querySelector(".dots");
@@ -222,13 +223,19 @@ function chart(id, rows, bars) {
     cur = (i + rows.length) % rows.length;
     const bs = bars(rows[cur]), over = bs.some(b => b.over);
     const vmax = Math.max(...bs.map(b => b.over ? 0 : b.v))*(over ? 2 : 1);
-    box.classList.remove("on");
-    box.innerHTML = bs.map((b, i) =>
-      '<div class="bar' + (b.bend ? " bend" : "") + (b.over ? " over" : "") + '" style="--h:' + (b.over ? 1 : b.v/vmax) + ";--i:" + i + '">'
-      + "<b>" + (b.mul ? "<em>" + b.mul + "</em>" : "") + (b.over ? "&gt;5 min" : secs(b.v)) + "</b><i></i><span>" + b.name + "</span></div>").join("");
+    const first = box.children.length === 0;
+    if (first) box.innerHTML = bs.map((b, i) => '<div class="bar' + (b.bend ? " bend" : "") + '" style="--i:' + i + '"><b></b><i></i><span>' + b.name + "</span></div>").join("");
+    bs.forEach((b, i) => {
+      const el = box.children[i], lab = el.firstChild;
+      const txt = (b.mul ? "<em>" + b.mul + "</em>" : "") + (b.over ? "&gt;5 min" : secs(b.v));
+      el.classList.toggle("over", !!b.over);
+      el.style.setProperty("--h", b.over ? 1 : b.v/vmax);
+      if (first || lab.innerHTML === txt) { lab.innerHTML = txt; return; }
+      lab.style.transition = "opacity .2s"; lab.style.opacity = 0;
+      setTimeout(() => { lab.innerHTML = txt; lab.style.opacity = ""; }, 220);
+    });
     cap.textContent = rows[cur][1];
     dots.innerHTML = "<a>«</a>" + rows.map((r, i) => '<i class="' + (i === cur ? "on" : "") + '" title="' + r[1] + '">' + (i === cur ? "●" : "○") + "</i>").join("") + "<a>»</a>";
-    void box.offsetWidth;
     if (fig._on) box.classList.add("on");
   }
   const timer = setInterval(() => { if (fig._on) show(cur + 1); }, 4000);
