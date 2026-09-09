@@ -41,7 +41,6 @@ h3 span{color:var(--b1);font-weight:400;margin-right:1ch}
 .try{margin:2.2em 0 1.2em;white-space:normal;line-height:2.2}
 .btn{display:inline-block;background:var(--vio);color:#fff;font-weight:600;font-size:1.1em;padding:.1em 1.6ch;border-radius:5px;border:0}
 .btn:hover{background:#7a72a8}
-.try .sub{display:block;color:var(--b0);font-size:.87em;line-height:1.6;margin-top:.5em}
 pre{position:relative}
 .cp{position:absolute;top:.5em;right:.8ch;font:inherit;font-size:.75em;line-height:1;color:var(--b1);background:var(--bg2);border:1px solid var(--line);border-radius:3px;padding:.35em .8ch;cursor:pointer}
 .cp:hover{color:var(--vio);border-color:var(--vio)}
@@ -99,7 +98,7 @@ canvas{display:block;width:100%}
   <h2><span>1.</span>Bend runs <b>FAST</b>.</h2>
   <p>Bend compiles to native code. On one core, it runs nearly as
 fast as C. The same binary also runs on sixteen cores, or on
-the GPU, where it is up to eighty times as fast as one core.</p>
+the GPU, where it is more than a hundred times as fast as one core.</p>
   <figure class="chart" id="c2">
     <p class="ct"></p>
     <div class="bars"></div>
@@ -171,8 +170,7 @@ Merging a bug is mathematically impossible: it is a <em>theorem</em>.</p>
   <span class="c"># ... written by the AI</span></code></pre>
   <p class="c pl"><code>LAWS.bend</code> is <code>AGENTS.md</code> backed by <b>proof</b>.
 <span class="q">“Make no mistakes”</span> is now <em>type-checked</em>.</p>
-  <p class="try c"><a id="try" class="btn" href="#lab">Live demo: try to break the law</a>
-<span class="sub">A real AI rewrites the game on your prompt. Bend guards it.</span></p>
+  <p class="try c"><a id="try" class="btn" href="#lab">Try it live: prompt an AI to change the game</a></p>
 
 </section>
 
@@ -270,29 +268,29 @@ function chart(id, rows, bars) {
 }
 // checker: Isabelle, Agda, Lean, Rocq, Bend; >300 is a timeout
 chart("c1", [
-  ["generics_3200", "3,200 generic instantiations", 300, 300, 19.557, 6.124, 0.345],
-  ["defs_12800", "12,800 definitions", 300, 300, 35.644, 3.095, 0.294],
-  ["proofs_3200", "3,200 proofs", 300, 300, 300, 9.760, 0.842],
-  ["trees_400", "400 smalltt trees", 8.475, 3.294, 1.386, 1.337, 0.608],
+  ["generics_3200", "3,200 generic instantiations", 300, 300, 19.214, 6.038, 0.384],
+  ["defs_12800", "12,800 definitions", 300, 300, 36.177, 5.985, 0.295],
+  ["proofs_3200", "3,200 proofs", 300, 300, 300, 9.526, 0.834],
+  ["trees_400", "400 smalltt trees", 8.475, 3.266, 1.335, 1.339, 0.606],
 ], r => ["Isabelle", "Agda", "Lean", "Rocq", "Bend"].map((name, i) => ({ name, v: r[i + 2], over: r[i + 2] >= 300, bend: name === "Bend" })));
 // runtime: TypeScript, Lean, C, then Bend on 1 core, 16 cores, the GPU
 chart("c2", [
-  ["gameoflife", "game of life", 18.957, 14.081, 6.989, 7.788, 0.659, 0.093],
-  ["bfs", "breadth-first search", 6.598, 9.328, 3.574, 3.511, 0.688, 3.377],
-  ["bitonic", "bitonic sort", 34.741, 28.402, 5.787, 6.148, 0.600, 0.435],
-  ["editdist", "edit distance", 5.710, 4.899, 2.094, 2.696, 0.242, 0.157],
-  ["hashmap", "hashmap", 0.920, 1.569, 0.646, 3.947, 0.335, 0.624],
-  ["kmeans", "k-means", 17.978, 5.861, 2.091, 2.243, 0.255, 0.187],
-  ["lexer", "lexer", 3.654, 5.186, 1.068, 2.637, 0.236, 1.678],
-  ["mandelbrot", "mandelbrot", 3.990, 4.700, 3.915, 4.679, 0.408, 0.080],
-  ["matmul", "matrix multiply", 11.258, 8.308, 2.867, 2.597, 0.233, 0.224],
-  ["merkle", "merkle tree", 7.258, 5.964, 3.555, 4.321, 0.392, 0.086],
-  ["nbody", "n-body", 5.393, 5.429, 5.004, 4.795, 0.435, 0.079],
-  ["queens", "n-queens", 7.442, 8.578, 4.724, 5.184, 0.436, 1.188],
-  ["radix", "radix sort", 6.738, 7.739, 3.535, 4.371, 0.391, 0.267],
-  ["raytrace", "ray tracer", 23.016, 11.039, 4.842, 4.928, 0.423, 0.197],
-  ["symreg", "symbolic regression", 5.974, 2.546, 2.236, 3.281, 0.286, 0.530],
-  ["terrain", "terrain", 5.803, 8.195, 2.262, 2.409, 0.218, 0.126],
+  ["gameoflife", "game of life", 18.683, 14.142, 7.158, 7.618, 0.686, 0.066],
+  ["bfs", "breadth-first search", 6.462, 9.512, 3.853, 3.859, 0.324, 0.214],
+  ["bitonic", "bitonic sort", 32.745, 27.043, 6.027, 5.914, 0.776, 0.433],
+  ["editdist", "edit distance", 5.359, 5.209, 2.335, 2.114, 0.197, 0.139],
+  ["hashmap", "hashmap", 0.909, 1.874, 0.940, 3.735, 0.332, 0.635],
+  ["kmeans", "k-means", 17.562, 6.259, 2.389, 2.058, 0.264, 0.187],
+  ["lexer", "lexer", 3.522, 5.511, 1.368, 2.470, 0.218, 1.706],
+  ["mandelbrot", "mandelbrot", 3.864, 4.881, 4.076, 4.491, 0.409, 0.056],
+  ["matmul", "matrix multiply", 11.045, 8.606, 3.177, 2.559, 0.257, 0.233],
+  ["merkle", "merkle tree", 7.223, 6.283, 3.908, 4.173, 0.407, 0.067],
+  ["nbody", "n-body", 5.297, 5.746, 5.302, 4.796, 0.433, 0.060],
+  ["queens", "n-queens", 7.011, 8.603, 4.922, 5.227, 0.436, 1.148],
+  ["radix", "radix sort", 6.263, 6.825, 3.116, 3.813, 0.407, 0.290],
+  ["raytrace", "ray tracer", 22.703, 11.334, 4.944, 4.785, 0.429, 0.198],
+  ["symreg", "symbolic regression", 5.700, 2.856, 2.498, 3.130, 0.282, 0.531],
+  ["terrain", "terrain", 5.680, 8.410, 2.466, 2.349, 0.209, 0.102],
 ], r => [
   { name: "TypeScript", v: r[2] }, { name: "Lean", v: r[3] }, { name: "C", v: r[4] },
   { name: "Bend<br>1 core", v: r[5], bend: true },
