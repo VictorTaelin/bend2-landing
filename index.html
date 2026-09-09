@@ -38,7 +38,13 @@ h2{font-size:1.3em;margin:0 0 .9em;color:var(--b02);font-weight:600}
 h2 span{color:var(--b1);font-weight:400;margin-right:1ch}
 h3{font-size:1em;margin:1.6em 0 .4em;color:var(--b02);font-weight:600}
 h3 span{color:var(--b1);font-weight:400;margin-right:1ch}
-.try{font-size:1.15em;margin:2em 0 1em;white-space:normal}
+.try{margin:2.2em 0 1.2em;white-space:normal;line-height:2.2}
+.btn{display:inline-block;background:var(--vio);color:#fff;font-weight:600;font-size:1.1em;padding:.1em 1.6ch;border-radius:5px;border:0}
+.btn:hover{background:#7a72a8}
+.try .sub{display:block;color:var(--b0);font-size:.87em;line-height:1.6;margin-top:.5em}
+pre{position:relative}
+.cp{position:absolute;top:.5em;right:.8ch;font:inherit;font-size:.75em;line-height:1;color:var(--b1);background:var(--bg2);border:1px solid var(--line);border-radius:3px;padding:.35em .8ch;cursor:pointer}
+.cp:hover{color:var(--vio);border-color:var(--vio)}
 
 pre{margin:1em 0;padding:.8em 1ch;background:var(--bg2);border-radius:3px;overflow-x:auto;line-height:1.5;color:var(--b01);tab-size:2}
 pre code{color:inherit}
@@ -165,7 +171,8 @@ Merging a bug is mathematically impossible: it is a <em>theorem</em>.</p>
   <span class="c"># ... written by the AI</span></code></pre>
   <p class="c pl"><code>LAWS.bend</code> is <code>AGENTS.md</code> backed by <b>proof</b>.
 <span class="q">“Make no mistakes”</span> is now <em>type-checked</em>.</p>
-  <p class="try c"><a id="try" href="#lab">Don't believe it? Click here to break the law.</a></p>
+  <p class="try c"><a id="try" class="btn" href="#lab">Live demo: try to break the law</a>
+<span class="sub">A real AI rewrites the game on your prompt. Bend guards it.</span></p>
 
 </section>
 
@@ -208,6 +215,17 @@ const io = new IntersectionObserver(es => es.forEach(e => {
   const el = e.target; el._on = e.isIntersecting;
   if (el._on && el._run) el._run();
 }), { threshold: 0.15 });
+
+// ---------------------------------------------------------------- copy
+// every code block gets a copy button; a click copies the block's text
+for (const pre of document.querySelectorAll("pre")) {
+  const b = document.createElement("button");
+  b.className = "cp"; b.textContent = "copy"; b.type = "button";
+  b.onclick = () => navigator.clipboard.writeText(pre.querySelector("code").textContent).then(() => {
+    b.textContent = "copied"; setTimeout(() => { b.textContent = "copy"; }, 1200);
+  });
+  pre.append(b);
+}
 
 // ---------------------------------------------------------------- charts
 // One chart, many benches: it pages to the next bench every 4 s while on
